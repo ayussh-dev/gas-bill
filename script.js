@@ -92,7 +92,7 @@
     if(images[0]){ fitCanvasToScreen(images[0].width, images[0].height); drawImageCover(images[0]); }
   }
 
-  // Lazy-start on first scroll interaction
+  // Start on page load so the first frame is visible immediately.
   let started = false;
   async function beginIfNeeded(){
     if(started) return; started = true;
@@ -103,6 +103,7 @@
     attachScrollHandler(images);
   }
 
+  beginIfNeeded();
   window.addEventListener('scroll', beginIfNeeded, {passive:true, once:true});
   window.addEventListener('wheel', beginIfNeeded, {passive:true, once:true});
   window.addEventListener('touchstart', beginIfNeeded, {passive:true, once:true});
