@@ -566,8 +566,8 @@ Enter a flat ID and load the saved payment status.
     const db = getFirestore(app);
     const ADMIN_EMAIL = 'ayussh1129@gmail.com';
     const unitIds = Array.from({ length: 60 }, (_, index) => {
-        const floor = Math.floor(index / 10) + 1;
-        const room = (index % 10) + 1;
+        const floor = Math.floor(index / 6);
+        const room = (index % 6) + 1;
         return `${floor}${String(room).padStart(2, '0')}`;
     });
     const unitCards = new Map();
