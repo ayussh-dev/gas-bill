@@ -361,6 +361,7 @@ Enter a flat ID and load the saved payment status.
         let progress = 0;
         let target = 0;
         let completed = false;
+        let revealTimeout = null;
         let touchStartY = null;
 
         function clamp(v, min, max) {
@@ -394,6 +395,10 @@ Enter a flat ID and load the saved payment status.
         function revealSite() {
             if (completed) return;
             completed = true;
+            if (revealTimeout) {
+                clearTimeout(revealTimeout);
+                revealTimeout = null;
+            }
             intro.classList.add('intro-hidden');
             appShell.classList.remove('opacity-0', 'pointer-events-none');
             window.removeEventListener('wheel', onWheel);
@@ -424,6 +429,9 @@ Enter a flat ID and load the saved payment status.
         function pushProgress(step) {
             if (completed) return;
             target = clamp(target + step, 0, 1);
+            if (target >= 0.98 && !revealTimeout) {
+                revealTimeout = window.setTimeout(revealSite, 600);
+            }
             requestAnimationFrame(tick);
         }
 

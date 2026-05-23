@@ -17,7 +17,6 @@
   }
 
   async function loadFramesList(){
-    // Prefer repaired list if available
     try{
       const fixedResp = await fetch('frames_fixed/frames.json');
       if(fixedResp.ok) return await fixedResp.json();
@@ -49,16 +48,13 @@
     });
   }
 
-  // Crop bottom portion of frames to hide watermark, and draw cover-style
-  const WATERMARK_CROP = 0.08; // fraction of image height to crop from bottom (8%)
+  const WATERMARK_CROP = 0.08;
   function drawImageCover(img){
     if(!img) return;
     const cvsW = canvas.width, cvsH = canvas.height;
     const srcW = img.width;
     const srcH = Math.max(1, Math.floor(img.height * (1 - WATERMARK_CROP)));
-    const sx = 0, sy = 0; // crop from top-left
-
-    // compute scale to cover canvas using source (cropped) size
+    const sx = 0, sy = 0;
     const s = Math.max(cvsW / srcW, cvsH / srcH);
     const dw = srcW * s, dh = srcH * s;
     const dx = (cvsW - dw) / 2, dy = (cvsH - dh) / 2;
@@ -70,19 +66,22 @@
 
   function attachScrollHandler(images){
     const total = images.length;
-    // Map animation to a small number of viewport scrolls so it finishes quickly
-    const DESIRED_VIEWPORT_SCROLLS = 4; // finish animation in ~4 viewport scrolls
+    const DESIRED_VIEWPORT_SCROLLS = 4;
     const totalScrollable = window.innerHeight * Math.max(1, (DESIRED_VIEWPORT_SCROLLS - 1));
     document.body.style.height = (window.innerHeight * DESIRED_VIEWPORT_SCROLLS) + 'px';
 
     function onScroll(){
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
       const progress = clamp(scrollTop / totalScrollable, 0, 1);
+
+      // Redirect to main site when animation completes
+      if(progress >= 1){
+        window.location.href = 'code.html';
+      }
+
       const idx = Math.min(total-1, Math.floor(progress * (total-1)));
-      // draw frame
       requestAnimationFrame(()=> drawImageCover(images[idx]));
-      // title fade/translate
-      const t = clamp(progress * 1.25, 0, 1); // faster fade
+      const t = clamp(progress * 1.25, 0, 1);
       if(title){ title.style.opacity = String(1 - t); title.style.transform = `translateY(${ -t * 20 }px)` }
       if(subtitle){ subtitle.style.opacity = String(1 - t*1.2); subtitle.style.transform = `translateY(${ -t * 8 }px)` }
     }
@@ -92,13 +91,11 @@
     if(images[0]){ fitCanvasToScreen(images[0].width, images[0].height); drawImageCover(images[0]); }
   }
 
-  // Start on page load so the first frame is visible immediately.
   let started = false;
   async function beginIfNeeded(){
     if(started) return; started = true;
     const list = await loadFramesList();
     if(!list){ console.warn('No frames found (frames/frames.json missing).'); return }
-    // show a small preloader by setting body background while loading
     const images = await preloadImages(list, ()=>{});
     attachScrollHandler(images);
   }

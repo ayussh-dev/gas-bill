@@ -3,6 +3,7 @@
   "routes": [
     { "src": "/(.*\\.(?:js|css|json|jpg|jpeg|png|gif|webp|mp4|zip))", "dest": "/$1" },
     { "src": "/code.html", "dest": "/code.html" },
+    { "src": "/", "dest": "/code.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
