@@ -1,0 +1,26 @@
+/* Full-viewport canvas */
+html,body{height:100%;margin:0}
+#root{min-height:100%}
+:root{
+	--bg-900: #0b0810;
+	--bg-700: #130922;
+	--accent-500: #7c3aed; /* purple */
+	--accent-300: #c4b5fd; /* light purple */
+	--muted: rgba(255,255,255,0.85);
+}
+body{background:linear-gradient(180deg,var(--bg-900),var(--bg-700));color:#fff;font-family:Montserrat,system-ui,Segoe UI,Roboto,Arial}
+#canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+
+/* Header/title overlay */
+#siteHeader{position:fixed;inset:auto 0 0 0;top:28px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;pointer-events:none;z-index:60}
+#siteTitle{font-weight:600;margin:0;color:var(--accent-300);font-size:32px;letter-spacing:0.6px;text-align:center;transition:opacity 300ms ease,transform 300ms ease;text-shadow:0 6px 24px rgba(124,58,237,0.12)}
+#siteSubtitle{margin:6px 0 0;color:var(--muted);font-size:14px;opacity:0.9;transition:opacity 300ms ease,transform 300ms ease}
+
+/* subtle decorative underline accent */
+#siteTitle::after{content:"";display:block;height:3px;width:72px;margin:12px auto 0;border-radius:3px;background:linear-gradient(90deg,var(--accent-500), rgba(124,58,237,0.6));box-shadow:0 6px 18px rgba(124,58,237,0.12)}
+
+/* Small adjustments for readability */
+@media (min-width:800px){#siteTitle{font-size:42px}}
+
+/* Utility */
+.hide{display:none}

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kalkura Palace - Gas Billing Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ffb4ab",
+                        "surface-container-high": "#2d2834",
+                        "surface-bright": "#3c3743",
+                        "surface-container-lowest": "#100c17",
+                        "on-primary": "#430088",
+                        "tertiary-container": "#aa5200",
+                        "tertiary": "#ffb689",
+                        "on-secondary": "#40147a",
+                        "on-primary-container": "#f4e8ff",
+                        "surface-dim": "#16111c",
+                        "background": "#16111c",
+                        "on-secondary-container": "#cba9ff",
+                        "surface-variant": "#38333f",
+                        "surface-container-highest": "#38333f",
+                        "inverse-surface": "#e9dfef",
+                        "surface": "#16111c",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#d6baff",
+                        "inverse-primary": "#7e11f2",
+                        "outline-variant": "#4b4356",
+                        "on-primary-fixed": "#280056",
+                        "on-primary-fixed-variant": "#6000be",
+                        "on-error": "#690005",
+                        "primary-container": "#8b2dff",
+                        "inverse-on-surface": "#332e3a",
+                        "on-tertiary-container": "#ffe8dc",
+                        "on-surface": "#e9dfef",
+                        "on-background": "#e9dfef",
+                        "on-surface-variant": "#cec2d9",
+                        "surface-tint": "#d6baff",
+                        "secondary-fixed-dim": "#d6baff",
+                        "surface-container-low": "#1e1a25",
+                        "primary-fixed": "#ecdcff",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb689",
+                        "secondary-fixed": "#ecdcff",
+                        "surface-container": "#221e29",
+                        "on-secondary-fixed": "#280057",
+                        "secondary-container": "#5a3395",
+                        "on-tertiary-fixed": "#311300",
+                        "on-tertiary": "#512300",
+                        "tertiary-fixed": "#ffdbc7",
+                        "primary": "#d6baff",
+                        "outline": "#978da2",
+                        "on-tertiary-fixed-variant": "#733500",
+                        "on-secondary-fixed-variant": "#573092",
+                        "secondary": "#d6baff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "container-max": "1440px",
+                        "margin-desktop": "40px",
+                        "unit": "4px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Hanken Grotesk"],
+                        "label-sm": ["JetBrains Mono"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "data-lg": ["JetBrains Mono"],
+                        "title-md": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "data-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #16111c; }
+        ::-webkit-scrollbar-thumb { background: #38333f; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b4356; }
+        
+        .hazard-border {
+            border: 2px solid #8b2dff;
+        }
+        .flat-card-paid {
+            @apply bg-primary/10 border-primary/40 text-primary;
+        }
+        .flat-card-pending {
+            @apply bg-surface-variant/30 border-outline-variant text-on-surface-variant;
+        }
+        #introOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(120% 120% at 50% 0%, #2a1640 0%, #16111c 45%, #120f19 100%);
+            transition: opacity 600ms ease;
+        }
+        #introCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #introText {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            padding: 0 24px;
+            transition: opacity 220ms ease, transform 220ms ease;
+        }
+        #introText h1 {
+            font-size: clamp(28px, 4vw, 52px);
+            line-height: 1.1;
+            font-weight: 700;
+            color: #e9dfef;
+            letter-spacing: -0.02em;
+            margin: 0;
+        }
+        #introText p {
+            margin-top: 10px;
+            color: #cec2d9;
+            font-size: 14px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .intro-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #adaptiveNav {
+            background: transparent;
+            border-bottom: 1px solid transparent;
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            transition: background-color 280ms ease, border-color 280ms ease, box-shadow 280ms ease, backdrop-filter 280ms ease;
+        }
+        #adaptiveNav.is-scrolled {
+            background: rgba(30, 23, 40, 0.72);
+            border-bottom-color: rgba(151, 141, 162, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        #adaptiveNavInner {
+            transition: padding 260ms ease;
+        }
+        /* Theme toggle button removed */
+        /* Spark canvas */
+        .spark-canvas {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 150;
+            mix-blend-mode: screen;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary selection:text-on-primary">
+<div id="introOverlay">
+<canvas id="introCanvas"></canvas>
+<div id="introText">
+<h1>Kalkura Palace Gas Billing</h1>
+<p>Scroll down to enter</p>
+</div>
+</div>
+<div class="flex h-screen overflow-hidden opacity-0 pointer-events-none transition-opacity duration-500" id="appShell">
+<!-- Side Navigation Shell -->
+<aside class="hidden md:flex flex-col h-screen p-unit overflow-y-auto bg-surface-container-lowest border-r border-outline-variant w-64 shrink-0">
+<div class="px-4 py-8">
+<h1 class="text-headline-lg font-headline-lg text-primary font-bold tracking-tighter">Kalkura Palace</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mt-1">Gas Grid Management</p>
+</div>
+<nav class="flex-1 px-2 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-title-md text-title-md">Dashboard</span>
+</a>
+</nav>
+<div class="px-2 pb-6 space-y-4">
+<div class="pt-4 border-t border-outline-variant">
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto relative bg-surface-dim" id="mainScroller">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 w-full" id="adaptiveNav">
+<div class="flex justify-between items-center px-margin-desktop py-4 w-full max-w-container-max mx-auto" id="adaptiveNavInner">
+<div class="flex items-center gap-8">
+<span class="font-headline-lg text-headline-lg font-bold text-primary">Kalkura Palace - Gas Billing</span>
+<div class="hidden lg:flex items-center bg-surface-container-high px-4 py-1.5 rounded border border-outline-variant">
+<span class="text-on-surface font-bold font-body-md text-body-md" id="currentCycleChip">May 2026</span>
+</div>
+</div>
+    <div class="relative flex items-center gap-4">
+<button id="settingsButton" class="p-2 text-on-surface-variant hover:text-primary transition-colors" aria-haspopup="true" aria-expanded="false"><span class="material-symbols-outlined">settings</span></button>
+    <div id="settingsMenu" class="absolute right-0 top-12 hidden min-w-56 rounded border border-outline-variant bg-surface-container-low shadow-xl overflow-hidden z-[120]">
+    <button data-settings-action="refresh" class="w-full text-left px-4 py-3 text-sm text-on-surface hover:bg-surface-variant">Refresh dashboard</button>
+    <button data-settings-action="signout" class="w-full text-left px-4 py-3 text-sm text-on-surface hover:bg-surface-variant">Sign out</button>
+    </div>
+<!-- Removed account button -->
+</div>
+</div>
+</header>
+<div class="p-margin-desktop space-y-gutter max-w-container-max mx-auto">
+<!-- Focused Summary Section -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="bg-surface-container border border-outline-variant p-6 rounded relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Active Cycle Progress</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface" id="cycleTitle">May 2026</h3>
+</div>
+<span class="material-symbols-outlined text-primary">analytics</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-on-surface-variant">
+<span class="text-body-md">Payments Processed</span>
+<span class="font-data-lg text-data-lg text-primary" id="cyclePercent">0%</span>
+</div>
+<div class="h-2 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary" id="cycleProgressBar" style="width: 0%"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container border border-outline-variant p-6 rounded">
+<div class="flex justify-between items-start mb-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Collection Status</p>
+<span class="material-symbols-outlined text-on-surface-variant">check_circle</span>
+</div>
+<div class="flex items-center gap-8">
+<div>
+<p class="font-data-lg text-data-lg text-primary" id="paidCount">0</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">PAID FLATS</p>
+</div>
+<div class="h-12 w-px bg-outline-variant"></div>
+<div>
+<p class="font-data-lg text-data-lg text-on-surface-variant" id="pendingCount">0</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">PENDING</p>
+</div>
+</div>
+</div>
+</section>
+<section class="grid grid-cols-1 xl:grid-cols-2 gap-gutter">
+<div class="bg-surface-container border border-outline-variant p-6 rounded space-y-4">
+<div class="flex items-start justify-between gap-4">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Firestore</p>
+<h3 class="font-title-md text-title-md text-on-surface">Save Bill Data</h3>
+</div>
+<span class="material-symbols-outlined text-primary">receipt_long</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<input id="billingFlatId" type="text" placeholder="Flat ID e.g. 101" class="w-full px-4 py-3 rounded bg-surface-container-high border border-outline-variant text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary"/>
+<input id="billingMonth" type="text" placeholder="Month e.g. October 2023" class="w-full px-4 py-3 rounded bg-surface-container-high border border-outline-variant text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary"/>
+<input id="billingAmount" type="number" placeholder="Amount" class="w-full px-4 py-3 rounded bg-surface-container-high border border-outline-variant text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary"/>
+<select id="billingPaid" class="w-full px-4 py-3 rounded bg-surface-container-high border border-outline-variant text-on-surface outline-none focus:border-primary">
+<option value="true">Paid</option>
+<option value="false">Pending</option>
+</select>
+</div>
+<button id="billingSave" class="px-4 py-2 rounded bg-primary text-on-primary font-bold">Save Bill</button>
+<p id="billingMessage" class="text-sm text-on-surface-variant"></p>
+</div>
+<div class="bg-surface-container border border-outline-variant p-6 rounded space-y-4">
+<div class="flex items-start justify-between gap-4">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Payment Status</p>
+<h3 class="font-title-md text-title-md text-on-surface">Lookup Flat</h3>
+</div>
+<span class="material-symbols-outlined text-primary">search</span>
+</div>
+<div class="flex gap-2">
+<input id="lookupFlatId" type="text" placeholder="Flat ID" class="flex-1 px-4 py-3 rounded bg-surface-container-high border border-outline-variant text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary"/>
+<button id="lookupLoad" class="px-4 py-2 rounded border border-outline-variant text-on-surface-variant">Load</button>
+</div>
+<div id="lookupResult" class="p-4 rounded bg-surface-container-high border border-outline-variant text-on-surface-variant text-sm">
+Enter a flat ID and load the saved payment status.
+</div>
+</div>
+</section>
+<!-- Interactive Flat Grid -->
+<section class="bg-surface-container border border-outline-variant rounded overflow-hidden">
+<div class="p-6 bg-surface-container-high border-b border-outline-variant flex flex-col md:flex-row justify-between items-center gap-4">
+<div>
+<h2 class="font-title-md text-title-md text-on-surface">Residential Units</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Select a unit to toggle payment status</p>
+</div>
+<div class="flex gap-2">
+<button id="legendPaid" class="flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 rounded">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="font-label-sm text-label-sm text-primary">Paid</span>
+</button>
+<button id="legendPending" class="flex items-center gap-2 px-3 py-1 bg-surface-variant/30 border border-outline-variant rounded">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Pending</span>
+</button>
+</div>
+</div>
+<div class="p-gutter overflow-x-auto">
+<div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-10 gap-4 min-w-[800px]" id="residentialGrid"></div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- Mobile Navigation Bottom Bar -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container border-t border-outline-variant flex justify-around items-center py-2 z-[100]">
+<button id="mobileDashboardBtn" class="flex flex-col items-center gap-1 text-primary p-2">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">DASHBOARD</span>
+</button>
+<button id="mobileSettingsBtn" class="flex flex-col items-center gap-1 text-on-surface-variant p-2">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold">SETTINGS</span>
+</button>
+</nav>
+<script>
+    (function () {
+        const intro = document.getElementById('introOverlay');
+        const introCanvas = document.getElementById('introCanvas');
+        const introText = document.getElementById('introText');
+        const appShell = document.getElementById('appShell');
+        if (!intro || !introCanvas || !introText || !appShell) return;
+
+        const ctx = introCanvas.getContext('2d');
+        let frames = [];
+        let progress = 0;
+        let target = 0;
+        let completed = false;
+        let touchStartY = null;
+
+        function clamp(v, min, max) {
+            return Math.max(min, Math.min(max, v));
+        }
+
+        function resizeCanvas() {
+            introCanvas.width = window.innerWidth;
+            introCanvas.height = window.innerHeight;
+            drawFrame();
+        }
+
+        function drawFrame() {
+            const cw = introCanvas.width;
+            const ch = introCanvas.height;
+            ctx.clearRect(0, 0, cw, ch);
+
+            if (!frames.length) return;
+            const idx = Math.min(frames.length - 1, Math.floor(progress * (frames.length - 1)));
+            const img = frames[idx];
+            if (!img) return;
+
+            const scale = Math.max(cw / img.width, ch / img.height);
+            const dw = img.width * scale;
+            const dh = img.height * scale;
+            const dx = (cw - dw) / 2;
+            const dy = (ch - dh) / 2;
+            ctx.drawImage(img, dx, dy, dw, dh);
+        }
+
+        function revealSite() {
+            if (completed) return;
+            completed = true;
+            intro.classList.add('intro-hidden');
+            appShell.classList.remove('opacity-0', 'pointer-events-none');
+            window.removeEventListener('wheel', onWheel);
+            window.removeEventListener('touchstart', onTouchStart);
+            window.removeEventListener('touchmove', onTouchMove);
+            window.removeEventListener('keydown', onKeyDown);
+            setTimeout(() => {
+                intro.style.display = 'none';
+            }, 650);
+        }
+
+        function tick() {
+            progress += (target - progress) * 0.16;
+            progress = clamp(progress, 0, 1);
+            drawFrame();
+
+            const t = clamp(progress * 1.2, 0, 1);
+            introText.style.opacity = String(1 - t);
+            introText.style.transform = `translateY(${-(t * 22)}px)`;
+
+            if (progress > 0.995) {
+                revealSite();
+            } else {
+                requestAnimationFrame(tick);
+            }
+        }
+
+        function pushProgress(step) {
+            if (completed) return;
+            target = clamp(target + step, 0, 1);
+            requestAnimationFrame(tick);
+        }
+
+        function onWheel(e) {
+            if (completed) return;
+            if (e.deltaY <= 0) return;
+            e.preventDefault();
+            // Around 4-5 wheel scrolls to complete intro
+            pushProgress(0.24);
+        }
+
+        function onTouchStart(e) {
+            if (completed) return;
+            touchStartY = e.touches && e.touches.length ? e.touches[0].clientY : null;
+        }
+
+        function onTouchMove(e) {
+            if (completed || touchStartY === null) return;
+            const y = e.touches && e.touches.length ? e.touches[0].clientY : touchStartY;
+            const delta = touchStartY - y;
+            if (delta > 8) {
+                e.preventDefault();
+                pushProgress(0.2);
+                touchStartY = y;
+            }
+        }
+
+        function onKeyDown(e) {
+            if (completed) return;
+            if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+                e.preventDefault();
+                pushProgress(0.22);
+            }
+        }
+
+        async function loadFrames() {
+            let list = null;
+            try {
+                const fixed = await fetch('frames_fixed/frames.json');
+                if (fixed.ok) list = await fixed.json();
+            } catch (err) {}
+            if (!list) {
+                try {
+                    const normal = await fetch('frames/frames.json');
+                    if (normal.ok) list = await normal.json();
+                } catch (err) {}
+            }
+            if (!list || !list.length) {
+                revealSite();
+                return;
+            }
+
+            frames = await Promise.all(list.map((src) => new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = src;
+            })));
+            frames = frames.filter(Boolean);
+            if (!frames.length) {
+                revealSite();
+                return;
+            }
+
+            resizeCanvas();
+            drawFrame();
+
+            window.addEventListener('wheel', onWheel, { passive: false });
+            window.addEventListener('touchstart', onTouchStart, { passive: true });
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+            window.addEventListener('keydown', onKeyDown);
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        loadFrames();
+    })();
+
+    (function () {
+        const nav = document.getElementById('adaptiveNav');
+        const navInner = document.getElementById('adaptiveNavInner');
+        const scroller = document.getElementById('mainScroller');
+        if (!nav || !navInner || !scroller) return;
+
+        function updateAdaptiveNav() {
+            const scrollTop = scroller.scrollTop || 0;
+            const isScrolled = scrollTop > 18;
+            nav.classList.toggle('is-scrolled', isScrolled);
+
+            // Compact the nav a bit as the user scrolls down.
+            const t = Math.min(scrollTop / 220, 1);
+            const py = 16 - (t * 6);
+            navInner.style.paddingTop = `${py}px`;
+            navInner.style.paddingBottom = `${py}px`;
+        }
+
+        scroller.addEventListener('scroll', updateAdaptiveNav, { passive: true });
+        updateAdaptiveNav();
+    })();
+
+    // Micro-interactions for scale effect
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('mousedown', () => {
+            btn.classList.add('scale-95', 'opacity-80');
+        });
+        btn.addEventListener('mouseup', () => {
+            btn.classList.remove('scale-95', 'opacity-80');
+        });
+        btn.addEventListener('mouseleave', () => {
+            btn.classList.remove('scale-95', 'opacity-80');
+        });
+    });
+</script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, doc, getDoc, getDocs, setDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAJ8qAqZ4IB3CzGYVOYx0goziaptyDKGyY",
+        authDomain: "gas-bill-52cda.firebaseapp.com",
+        projectId: "gas-bill-52cda",
+        storageBucket: "gas-bill-52cda.firebasestorage.app",
+        messagingSenderId: "151573532450",
+        appId: "1:151573532450:web:617501c5106eadaa5d9f7b",
+        measurementId: "G-X52F3BKETJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const ADMIN_EMAIL = 'ayussh1129@gmail.com';
+    const unitIds = Array.from({ length: 60 }, (_, index) => {
+        const floor = Math.floor(index / 10) + 1;
+        const room = (index % 10) + 1;
+        return `${floor}${String(room).padStart(2, '0')}`;
+    });
+    const unitCards = new Map();
+    const currentCycle = getCurrentCycleInfo();
+    let currentCycleBills = new Map();
+    let settingsMenuOpen = false;
+
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authState = document.getElementById('authState');
+    const authMessage = document.getElementById('authMessage');
+    const authSignIn = document.getElementById('authSignIn');
+    const authSignOut = document.getElementById('authSignOut');
+
+    const billingFlatId = document.getElementById('billingFlatId');
+    const billingMonth = document.getElementById('billingMonth');
+    const billingAmount = document.getElementById('billingAmount');
+    const billingPaid = document.getElementById('billingPaid');
+    const billingSave = document.getElementById('billingSave');
+    const billingMessage = document.getElementById('billingMessage');
+
+    const lookupFlatId = document.getElementById('lookupFlatId');
+    const lookupLoad = document.getElementById('lookupLoad');
+    const lookupResult = document.getElementById('lookupResult');
+    const cycleTitle = document.getElementById('cycleTitle');
+    const cyclePercent = document.getElementById('cyclePercent');
+    const cycleProgressBar = document.getElementById('cycleProgressBar');
+    const paidCount = document.getElementById('paidCount');
+    const pendingCount = document.getElementById('pendingCount');
+    const currentCycleChip = document.getElementById('currentCycleChip');
+    const settingsButton = document.getElementById('settingsButton');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const residentialGrid = document.getElementById('residentialGrid');
+
+    function getCurrentCycleInfo() {
+        const now = new Date();
+        const cycleId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const cycleLabel = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(now);
+        return { cycleId, cycleLabel, year: now.getFullYear(), month: now.getMonth() + 1 };
+    }
+
+    function getCycleDocRef() {
+        return doc(db, 'billingCycles', currentCycle.cycleId);
+    }
+
+    function getFlatsCollectionRef() {
+        return collection(db, 'billingCycles', currentCycle.cycleId, 'flats');
+    }
+
+    function cycleFlatDocRef(flatId) {
+        return doc(db, 'billingCycles', currentCycle.cycleId, 'flats', flatId);
+    }
+
+    function renderCycleLabels() {
+        if (cycleTitle) cycleTitle.textContent = currentCycle.cycleLabel;
+        if (currentCycleChip) currentCycleChip.textContent = currentCycle.cycleLabel;
+    }
+
+    function buildUnitGrid() {
+        if (!residentialGrid) return;
+        residentialGrid.innerHTML = unitIds.map((flatId) => `
+            <button
+                id="unit-${flatId}"
+                data-flat-id="${flatId}"
+                class="unit-card flex flex-col items-center justify-center p-4 rounded border bg-surface-variant/30 border-outline-variant text-on-surface-variant hover:border-primary transition-all group"
+                type="button"
+            >
+                <span class="font-label-sm text-label-sm opacity-70 mb-1">UNIT</span>
+                <span class="font-data-lg text-data-lg">${flatId}</span>
+                <div class="status-dot mt-2 w-1.5 h-1.5 rounded-full bg-outline-variant group-hover:scale-125 transition-transform"></div>
+            </button>
+        `).join('');
+
+        residentialGrid.querySelectorAll('.unit-card').forEach((button) => {
+            const flatId = button.dataset.flatId;
+            unitCards.set(flatId, button);
+            // single click toggles paid/pending and attempts to save
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const existing = currentCycleBills.get(flatId) || { paid: false, amount: Number(billingAmount.value) || 0, month: currentCycle.cycleLabel };
+                const newPaid = !existing.paid;
+                const record = {
+                    flatId,
+                    month: existing.month || currentCycle.cycleLabel,
+                    amount: existing.amount || 0,
+                    paid: newPaid,
+                    cycleId: currentCycle.cycleId,
+                    cycleLabel: currentCycle.cycleLabel,
+                    updatedAt: serverTimestamp(),
+                    updatedBy: auth.currentUser?.email || null
+                };
+
+                // update local state & visuals immediately
+                currentCycleBills.set(flatId, record);
+                setUnitVisualState(flatId, newPaid);
+                updateSummaryStats();
+                showBillMessage(`Setting ${flatId} → ${newPaid ? 'Paid' : 'Pending'}...`);
+
+                // attempt to persist to Firestore (may fail if rules block)
+                try {
+                    await window.gasBillingFirebase.saveBill(flatId, { month: record.month, amount: record.amount, paid: record.paid, updatedBy: record.updatedBy });
+                    showBillMessage(`Saved status for ${flatId}.`);
+                } catch (err) {
+                    // revert visual state on failure
+                    const errMsg = err && err.message ? err.message : String(err);
+                    showBillMessage(errMsg, true);
+                    // keep visual change but mark as unsaved (user can retry via Save Bill)
+                }
+            });
+
+            // double-click opens the billing form for detailed edit
+            button.addEventListener('dblclick', () => selectUnit(flatId));
+        });
+    }
+
+    function selectUnit(flatId) {
+        if (billingFlatId) billingFlatId.value = flatId;
+        if (lookupFlatId) lookupFlatId.value = flatId;
+        if (lookupLoad) lookupLoad.click();
+        const target = document.getElementById('billingFlatId');
+        target?.focus();
+        document.getElementById('billingFlatId')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function getBillRecord(flatId) {
+        return currentCycleBills.get(flatId) || null;
+    }
+
+    function setUnitVisualState(flatId, paid) {
+        const card = unitCards.get(flatId);
+        if (!card) return;
+        const dot = card.querySelector('.status-dot');
+        card.classList.toggle('bg-primary/10', paid);
+        card.classList.toggle('border-primary/40', paid);
+        card.classList.toggle('text-primary', paid);
+        card.classList.toggle('bg-surface-variant/30', !paid);
+        card.classList.toggle('border-outline-variant', !paid);
+        card.classList.toggle('text-on-surface-variant', !paid);
+        dot?.classList.toggle('bg-primary', paid);
+        dot?.classList.toggle('bg-outline-variant', !paid);
+    }
+
+    function updateSummaryStats() {
+        const paid = Array.from(currentCycleBills.values()).filter((bill) => bill.paid).length;
+        const total = currentCycleBills.size;
+        const pending = unitIds.length - paid;
+        const percent = unitIds.length ? Math.round((paid / unitIds.length) * 100) : 0;
+
+        if (paidCount) paidCount.textContent = String(paid);
+        if (pendingCount) pendingCount.textContent = String(Math.max(pending, 0));
+        if (cyclePercent) cyclePercent.textContent = `${percent}%`;
+        if (cycleProgressBar) cycleProgressBar.style.width = `${percent}%`;
+
+        unitIds.forEach((flatId) => {
+            const bill = getBillRecord(flatId);
+            setUnitVisualState(flatId, !!bill?.paid);
+        });
+    }
+
+    async function loadCycleBills() {
+        currentCycleBills = new Map();
+        const snapshot = await getDocs(getFlatsCollectionRef());
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            currentCycleBills.set(docSnap.id, data);
+        });
+        updateSummaryStats();
+    }
+
+    function openSettingsMenu() {
+        settingsMenu?.classList.remove('hidden');
+        settingsButton?.setAttribute('aria-expanded', 'true');
+        settingsMenuOpen = true;
+    }
+
+    function closeSettingsMenu() {
+        settingsMenu?.classList.add('hidden');
+        settingsButton?.setAttribute('aria-expanded', 'false');
+        settingsMenuOpen = false;
+    }
+
+    function toggleSettingsMenu() {
+        if (settingsMenuOpen) closeSettingsMenu(); else openSettingsMenu();
+    }
+
+    function setText(node, text) {
+        if (node) node.textContent = text;
+    }
+
+    function showAuthMessage(message, isError = false) {
+        if (!authMessage) return;
+        authMessage.textContent = message;
+        authMessage.className = isError ? 'text-sm text-error' : 'text-sm text-primary';
+    }
+
+    function showBillMessage(message, isError = false) {
+        if (!billingMessage) return;
+        billingMessage.textContent = message;
+        billingMessage.className = isError ? 'text-sm text-error' : 'text-sm text-on-surface-variant';
+    }
+
+    function isAdminUser(user) {
+        return !!user && String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    }
+
+    function requireAdmin() {
+        // Billing is now public — allow actions from any client.
+        return true;
+    }
+
+    function renderLookup(docSnap, flatId) {
+        if (!lookupResult) return;
+        if (!docSnap.exists()) {
+            lookupResult.innerHTML = `No bill found for <strong>${flatId}</strong>.`;
+            return;
+        }
+        const data = docSnap.data();
+        lookupResult.innerHTML = `
+            <div class="space-y-2 text-on-surface">
+                <p><strong>Flat:</strong> ${data.flatId || flatId}</p>
+                <p><strong>Month:</strong> ${data.month || '-'}</p>
+                <p><strong>Amount:</strong> ${data.amount ?? '-'}</p>
+                <p><strong>Status:</strong> ${data.paid ? 'Paid' : 'Pending'}</p>
+            </div>
+        `;
+    }
+
+    settingsButton?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggleSettingsMenu();
+    });
+
+    settingsMenu?.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-settings-action]');
+        if (!button) return;
+        const action = button.dataset.settingsAction;
+        closeSettingsMenu();
+
+        if (action === 'refresh') {
+            await loadCycleBills();
+            showAuthMessage('Dashboard refreshed.');
+        }
+
+        if (action === 'signout') {
+            try { await signOut(auth); } catch (e) { /* ignore */ }
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!settingsMenuOpen) return;
+        if (settingsMenu?.contains(event.target) || settingsButton?.contains(event.target)) return;
+        closeSettingsMenu();
+    });
+
+    billingSave?.addEventListener('click', async () => {
+        try {
+            const flatId = billingFlatId.value.trim();
+            const month = billingMonth.value.trim();
+            const amount = Number(billingAmount.value);
+            const paid = billingPaid.value === 'true';
+
+            if (!flatId || !month || Number.isNaN(amount)) {
+                showBillMessage('Please fill flat ID, month, and amount.', true);
+                return;
+            }
+
+            const record = {
+                flatId,
+                month,
+                amount,
+                paid,
+                cycleId: currentCycle.cycleId,
+                cycleLabel: currentCycle.cycleLabel,
+                updatedAt: serverTimestamp(),
+                updatedBy: auth.currentUser?.email || null
+            };
+
+            await setDoc(getCycleDocRef(), {
+                cycleId: currentCycle.cycleId,
+                cycleLabel: currentCycle.cycleLabel,
+                updatedAt: serverTimestamp(),
+                updatedBy: auth.currentUser?.email || null
+            }, { merge: true });
+
+            await setDoc(cycleFlatDocRef(flatId), record, { merge: true });
+
+            currentCycleBills.set(flatId, record);
+            updateSummaryStats();
+
+            showBillMessage(`Saved bill for flat ${flatId}.`);
+        } catch (error) {
+            console.error('SaveBill error', error);
+            const msg = error && error.code ? `${error.code}: ${error.message}` : (error && error.message) || String(error);
+            showBillMessage(msg, true);
+        }
+    });
+
+    lookupLoad?.addEventListener('click', async () => {
+        try {
+            const flatId = lookupFlatId.value.trim();
+            if (!flatId) {
+                lookupResult.textContent = 'Please enter a flat ID first.';
+                return;
+            }
+            lookupResult.textContent = 'Loading...';
+            const snap = await getDoc(cycleFlatDocRef(flatId));
+            renderLookup(snap, flatId);
+        } catch (error) {
+            lookupResult.textContent = error.message;
+        }
+    });
+
+    window.gasBillingFirebase = {
+        app,
+        auth,
+        db,
+        cycle: currentCycle,
+        saveBill: async (flatId, payload) => setDoc(cycleFlatDocRef(flatId), { flatId, cycleId: currentCycle.cycleId, cycleLabel: currentCycle.cycleLabel, ...payload }, { merge: true }),
+        getBill: async (flatId) => getDoc(cycleFlatDocRef(flatId)),
+        refresh: loadCycleBills
+    };
+
+    // UI interactions: filter legend, account button, mobile nav
+    function setupUIInteractions() {
+        let currentFilter = null;
+        const legendPaid = document.getElementById('legendPaid');
+        const legendPending = document.getElementById('legendPending');
+        const mobileDashboardBtn = document.getElementById('mobileDashboardBtn');
+        const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
+
+        function applyFilter() {
+            unitCards.forEach((button, flatId) => {
+                const bill = currentCycleBills.get(flatId);
+                const paid = !!bill?.paid;
+                if (currentFilter === 'paid') button.style.display = paid ? '' : 'none';
+                else if (currentFilter === 'pending') button.style.display = paid ? 'none' : '';
+                else button.style.display = '';
+            });
+            if (legendPaid) legendPaid.classList.toggle('ring-2', currentFilter === 'paid');
+            if (legendPending) legendPending.classList.toggle('ring-2', currentFilter === 'pending');
+        }
+
+        legendPaid?.addEventListener('click', () => { currentFilter = currentFilter === 'paid' ? null : 'paid'; applyFilter(); });
+        legendPending?.addEventListener('click', () => { currentFilter = currentFilter === 'pending' ? null : 'pending'; applyFilter(); });
+
+        mobileDashboardBtn?.addEventListener('click', () => { document.getElementById('mainScroller')?.scrollTo({ top: 0, behavior: 'smooth' }); });
+        mobileSettingsBtn?.addEventListener('click', (e) => { e.stopPropagation(); toggleSettingsMenu(); });
+
+        // Modal removed; no account interactions
+    }
+
+    renderCycleLabels();
+    buildUnitGrid();
+    setupUIInteractions();
+    loadCycleBills().catch((error) => showBillMessage(error.message, true));
+
+    
+
+    // Simple spark particle system for mouse movement
+    function initSparkCanvas() {
+        const canvas = document.createElement('canvas');
+        canvas.id = 'sparkCanvas';
+        canvas.className = 'spark-canvas';
+        canvas.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        const particles = [];
+
+        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize);
+
+        function spawn(x, y) {
+            for (let i = 0; i < 6; i++) {
+                particles.push({
+                    x: x + (Math.random() - 0.5) * 8,
+                    y: y + (Math.random() - 0.5) * 8,
+                    vx: (Math.random() - 0.5) * 1.6,
+                    vy: (Math.random() - 0.5) * 1.6 - 0.6,
+                    life: 1,
+                    decay: 0.02 + Math.random() * 0.02,
+                    size: 1 + Math.random() * 2,
+                    hue: 260 + Math.random() * 40
+                });
+            }
+            // limit particle count
+            if (particles.length > 800) particles.splice(0, particles.length - 800);
+        }
+
+        let lastMove = 0;
+        window.addEventListener('mousemove', (e) => {
+            const now = Date.now();
+            // throttle spawn frequency slightly
+            if (now - lastMove > 10) {
+                spawn(e.clientX, e.clientY);
+                lastMove = now;
+            }
+        }, { passive: true });
+
+        function step() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.03; // gravity
+                p.life -= p.decay;
+                const alpha = Math.max(0, Math.min(1, p.life));
+                if (alpha <= 0) { particles.splice(i, 1); continue; }
+
+                ctx.beginPath();
+                ctx.fillStyle = `hsla(${p.hue},90%,65%,${alpha})`;
+                ctx.arc(p.x, p.y, p.size * alpha * 1.6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    initSparkCanvas();
+</script>
+<!-- Account modal removed -->
+</body></html>
